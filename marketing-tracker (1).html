@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketing Materials Sign In/Out</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --ink: #1a1a2e;
+    --paper: #f8f5ef;
+    --accent: #c8401a;
+    --gold: #d4a843;
+    --mid: #6b6b7a;
+    --line: #ddd8cf;
+    --green: #1f6b45;
+    --red: #c8401a;
+    --card: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    background: var(--ink);
+    padding: 0 2rem;
+    gap: 0.25rem;
+  }
+  .tab {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    padding: 1rem 1.5rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+  }
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .tab:hover:not(.active) { color: rgba(255,255,255,0.75); }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--ink);
+    color: white;
+    padding: 2.5rem 2rem 2rem;
+    border-bottom: 4px solid var(--gold);
+  }
+  .header-inner { max-width: 900px; margin: 0 auto; }
+  .header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.2rem;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .header h1 em { color: var(--gold); font-style: italic; }
+  .header p { color: rgba(255,255,255,0.55); font-size: 0.9rem; margin-top: 0.4rem; }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 2rem; }
+
+  /* ── FORM CARD ── */
+  .form-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--accent);
+    border-radius: 2px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .form-card h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .form-card h2 .dot {
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--mid);
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    border: 1.5px solid var(--line);
+    background: var(--paper);
+    padding: 0.7rem 0.9rem;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.2s;
+    color: var(--ink);
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: var(--accent); background: white; }
+
+  .action-row { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.75rem 1.75rem;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #a83214; transform: translateY(-1px); }
+  .btn-secondary { background: var(--ink); color: white; }
+  .btn-secondary:hover { background: #2d2d4a; }
+  .btn-outline { background: none; color: var(--accent); border: 1.5px solid var(--accent); }
+  .btn-outline:hover { background: var(--accent); color: white; }
+
+  /* ── ITEMS GRID ── */
+  .items-section h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    color: var(--mid);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.75rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+  }
+  .items-list { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+  .item-tag {
+    display: flex; align-items: center; gap: 0.4rem;
+    background: var(--paper);
+    border: 1.5px solid var(--line);
+    border-radius: 2px;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .item-tag:hover { border-color: var(--accent); }
+  .item-tag.selected { background: var(--accent); color: white; border-color: var(--accent); }
+  .item-tag .qty { font-size: 0.75rem; opacity: 0.75; }
+
+  /* ── LOG TABLE ── */
+  .log-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1rem;
+  }
+  .log-header h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+  }
+  .stats { display: flex; gap: 1rem; }
+  .stat {
+    text-align: center;
+    background: var(--card);
+    border: 1px solid var(--line);
+    padding: 0.6rem 1rem;
+    border-radius: 2px;
+    min-width: 80px;
+  }
+  .stat-num { font-size: 1.4rem; font-weight: 600; color: var(--accent); }
+  .stat-label { font-size: 0.7rem; color: var(--mid); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .filter-bar { display: flex; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+  .filter-btn {
+    font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; padding: 0.45rem 1rem;
+    border: 1.5px solid var(--line); background: none; border-radius: 2px;
+    cursor: pointer; transition: all 0.15s; color: var(--mid);
+  }
+  .filter-btn.active { background: var(--ink); color: white; border-color: var(--ink); }
+
+  .search-input {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; padding: 0.45rem 0.9rem;
+    border: 1.5px solid var(--line); background: white;
+    border-radius: 2px; outline: none; min-width: 200px;
+  }
+  .search-input:focus { border-color: var(--accent); }
+
+  .log-table { width: 100%; border-collapse: collapse; }
+  .log-table th {
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--mid);
+    padding: 0.6rem 0.9rem; text-align: left;
+    border-bottom: 2px solid var(--line);
+    background: var(--paper);
+  }
+  .log-table td {
+    padding: 0.9rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.88rem;
+    vertical-align: middle;
+  }
+  .log-table tr:hover td { background: rgba(200,64,26,0.03); }
+
+  .badge {
+    display: inline-block; padding: 0.25rem 0.65rem;
+    border-radius: 2px; font-size: 0.72rem; font-weight: 600;
+    letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .badge-out { background: #fff0ed; color: var(--red); border: 1px solid #f5c5b8; }
+  .badge-in  { background: #edf7f2; color: var(--green); border: 1px solid #b8dfc9; }
+  .badge-overdue { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+
+  .return-btn {
+    font-size: 0.75rem; font-weight: 600; letter-spacing: 0.05em;
+    text-transform: uppercase; padding: 0.35rem 0.8rem;
+    background: var(--green); color: white; border: none;
+    border-radius: 2px; cursor: pointer; transition: all 0.15s;
+  }
+  .return-btn:hover { background: #155034; }
+
+  .empty-state {
+    text-align: center; padding: 3rem;
+    color: var(--mid); font-size: 0.9rem;
+    border: 2px dashed var(--line);
+    border-radius: 2px;
+  }
+
+  /* ── SUCCESS TOAST ── */
+  .toast {
+    position: fixed; bottom: 2rem; right: 2rem;
+    background: var(--ink); color: white;
+    padding: 1rem 1.5rem; border-radius: 2px;
+    font-size: 0.88rem; font-weight: 500;
+    border-left: 4px solid var(--gold);
+    transform: translateY(120%); transition: transform 0.3s ease;
+    z-index: 999; max-width: 320px;
+  }
+  .toast.show { transform: translateY(0); }
+
+  /* ── QR PRINT PAGE ── */
+  .qr-section {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 2.5rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .qr-section h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .qr-section p { color: var(--mid); font-size: 0.9rem; margin-bottom: 1.5rem; }
+  #qrcode { display: inline-block; padding: 1rem; background: white; border: 1px solid var(--line); margin-bottom: 1.5rem; }
+  .qr-url { font-size: 0.8rem; color: var(--mid); word-break: break-all; margin-bottom: 1.5rem; }
+
+  @media print {
+    .tabs, .header, .page:not(#page-qr) { display: none !important; }
+    #page-qr { display: block !important; }
+    .print-hide { display: none !important; }
+    body { background: white; }
+    .print-card {
+      border: 2px solid #000 !important;
+      box-shadow: none !important;
+      page-break-inside: avoid;
+    }
+    .print-card * { color: black !important; }
+    .qr-section { border: 2px solid #000 !important; }
+    .tabs { display: none !important; }
+  }
+
+  .print-card {
+    background: white;
+    border: 1px solid var(--line);
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+  .print-card h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .instruction-list { list-style: none; }
+  .instruction-list li {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 0.6rem 0; border-bottom: 1px solid var(--line);
+    font-size: 0.9rem;
+  }
+  .instruction-list li:last-child { border-bottom: none; }
+  .step-num {
+    min-width: 24px; height: 24px;
+    background: var(--accent); color: white;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700;
+  }
+
+  .manage-section { margin-top: 2rem; }
+  .manage-section h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--line);
+  }
+  .inventory-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+  .inv-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--gold);
+    padding: 1.25rem;
+    border-radius: 2px;
+  }
+  .inv-card-name { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem; }
+  .inv-card-cat { font-size: 0.75rem; color: var(--mid); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.75rem; }
+  .inv-card-qty {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 1.5rem; font-weight: 700; color: var(--accent);
+  }
+  .inv-card-qty span { font-size: 0.8rem; font-weight: 400; color: var(--mid); }
+  .add-item-form {
+    background: var(--card);
+    border: 1.5px dashed var(--line);
+    padding: 1.5rem;
+    border-radius: 2px;
+    margin-top: 1rem;
+    display: none;
+  }
+  .add-item-form.open { display: block; }
+  .add-item-form .form-grid { grid-template-columns: 1fr 1fr 1fr auto; align-items: end; }
+
+  @media (max-width: 640px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .stats { display: none; }
+    .add-item-form .form-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('sign')">✏️ Sign In/Out</button>
+  <button class="tab" onclick="switchTab('log')">📋 Log</button>
+  <button class="tab" onclick="switchTab('inventory')">📦 Inventory</button>
+  <button class="tab" onclick="switchTab('qr')">🖨️ Print QR</button>
+</div>
+
+<!-- ══════════ SIGN IN/OUT PAGE ══════════ -->
+<div id="page-sign" class="page active">
+  <div class="header">
+    <div class="header-inner">
+      <h1>Marketing Materials<br><em>Sign In / Out</em></h1>
+      <p>Track who takes and returns materials from the marketing room</p>
+    </div>
+  </div>
+  <div class="container">
+    <div class="form-card">
+      <h2><span class="dot"></span> New Transaction</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Your Name *</label>
+          <input type="text" id="f-name" placeholder="First Last">
+        </div>
+        <div class="form-group">
+          <label>Department</label>
+          <input type="text" id="f-dept" placeholder="e.g. Sales, Events…">
+        </div>
+        <div class="form-group">
+          <label>Action *</label>
+          <select id="f-action">
+            <option value="out">📤 Signing OUT (taking materials)</option>
+            <option value="in">📥 Signing IN (returning materials)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Expected Return Date</label>
+          <input type="date" id="f-return">
+        </div>
+        <div class="form-group">
+          <label>Event / Purpose</label>
+          <input type="text" id="f-purpose" placeholder="e.g. Trade show, Client meeting…">
+        </div>
+        <div class="form-group">
+          <label>Contact / Email</label>
+          <input type="text" id="f-contact" placeholder="Phone or email">
+        </div>
+      </div>
+
+      <div class="items-section" style="margin-top:1.5rem;">
+        <h3>Select Items *</h3>
+        <div class="items-list" id="items-list"></div>
+        <p style="font-size:0.8rem;color:var(--mid);">Don't see an item? Add it in the <strong>Inventory</strong> tab.</p>
+      </div>
+
+      <div class="form-group full" style="margin-top:1rem;">
+        <label>Notes</label>
+        <textarea id="f-notes" rows="2" placeholder="Condition notes, quantity details, etc." style="resize:vertical;"></textarea>
+      </div>
+
+      <div class="action-row">
+        <button class="btn btn-primary" onclick="submitForm()">Submit Record</button>
+        <button class="btn btn-outline" onclick="clearForm()">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ LOG PAGE ══════════ -->
+<div id="page-log" class="page">
+  <div class="header">
+    <div class="header-inner">
+      <h1>Activity <em>Log</em></h1>
+      <p>All sign-in and sign-out records</p>
+    </div>
+  </div>
+  <div class="container">
+    <div class="log-header">
+      <h2>All Records</h2>
+      <div class="stats">
+        <div class="stat"><div class="stat-num" id="stat-out">0</div><div class="stat-label">Out</div></div>
+        <div class="stat"><div class="stat-num" id="stat-in" style="color:var(--green)">0</div><div class="stat-label">Returned</div></div>
+        <div class="stat"><div class="stat-num" id="stat-over" style="color:#856404">0</div><div class="stat-label">Overdue</div></div>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn" onclick="setFilter('out',this)">Out</button>
+      <button class="filter-btn" onclick="setFilter('in',this)">Returned</button>
+      <button class="filter-btn" onclick="setFilter('overdue',this)">Overdue</button>
+      <input class="search-input" type="text" placeholder="🔍 Search by name or item…" oninput="renderLog()" id="search">
+    </div>
+    <div id="log-container"></div>
+    <div style="margin-top:1rem;text-align:right;">
+      <button class="btn btn-outline" onclick="exportCSV()">⬇ Export CSV</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ INVENTORY PAGE ══════════ -->
+<div id="page-inventory" class="page">
+  <div class="header">
+    <div class="header-inner">
+      <h1>Materials <em>Inventory</em></h1>
+      <p>Manage all trackable marketing items</p>
+    </div>
+  </div>
+  <div class="container">
+    <div class="manage-section">
+      <h3>Current Inventory</h3>
+      <div class="inventory-grid" id="inv-grid"></div>
+      <div style="margin-top:1rem;">
+        <button class="btn btn-secondary" onclick="toggleAddItem()">+ Add New Item</button>
+      </div>
+      <div class="add-item-form" id="add-item-form">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Item Name *</label>
+            <input type="text" id="ni-name" placeholder="e.g. Roll-up Banner">
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="ni-cat">
+              <option>Banners & Displays</option>
+              <option>Print & Flyers</option>
+              <option>Tech Equipment</option>
+              <option>Branded Merchandise</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Qty in Stock</label>
+            <input type="number" id="ni-qty" value="1" min="1">
+          </div>
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <button class="btn btn-primary" onclick="addInventoryItem()">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ QR PRINT PAGE ══════════ -->
+<div id="page-qr" class="page">
+  <div class="header print-hide">
+    <div class="header-inner">
+      <h1>Print <em>QR Code</em></h1>
+      <p>Post this in your marketing room — staff scan to sign materials in/out</p>
+    </div>
+  </div>
+  <div class="container">
+    <div class="qr-section print-card">
+      <h2>📦 Marketing Materials Sign In/Out</h2>
+      <p>Scan the QR code below to sign materials in or out</p>
+      <div id="qrcode"></div>
+      <div class="qr-url" id="qr-url-text"></div>
+      <p style="font-size:0.85rem;color:var(--mid);">Open on any phone or computer — no app needed</p>
+    </div>
+    <div class="print-card">
+      <h3>How It Works</h3>
+      <ul class="instruction-list">
+        <li><span class="step-num">1</span><span>Scan the QR code above with your phone camera</span></li>
+        <li><span class="step-num">2</span><span>Select <strong>Sign OUT</strong> when taking materials, or <strong>Sign IN</strong> when returning them</span></li>
+        <li><span class="step-num">3</span><span>Choose the items you are taking or returning</span></li>
+        <li><span class="step-num">4</span><span>Enter your name, department, and expected return date</span></li>
+        <li><span class="step-num">5</span><span>Submit — the record is logged automatically</span></li>
+      </ul>
+    </div>
+    <div class="print-hide" style="text-align:center; margin-top:1rem;">
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Print This Page</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+let records = JSON.parse(localStorage.getItem('mr_records') || '[]');
+let inventory = JSON.parse(localStorage.getItem('mr_inventory') || JSON.stringify([
+  { id:1, name:'Roll-up Banner', cat:'Banners & Displays', qty:3 },
+  { id:2, name:'Pop-up Display', cat:'Banners & Displays', qty:2 },
+  { id:3, name:'Tablecloth (branded)', cat:'Banners & Displays', qty:4 },
+  { id:4, name:'Brochures (box)', cat:'Print & Flyers', qty:10 },
+  { id:5, name:'Flyers (pack)', cat:'Print & Flyers', qty:20 },
+  { id:6, name:'Business Cards', cat:'Print & Flyers', qty:15 },
+  { id:7, name:'Projector', cat:'Tech Equipment', qty:1 },
+  { id:8, name:'Tablet (iPad)', cat:'Tech Equipment', qty:2 },
+  { id:9, name:'Branded Tote Bags', cat:'Branded Merchandise', qty:30 },
+  { id:10, name:'Branded Pens (box)', cat:'Branded Merchandise', qty:8 },
+]));
+let selectedItems = [];
+let currentFilter = 'all';
+let nextId = inventory.length + 1;
+
+function save() {
+  localStorage.setItem('mr_records', JSON.stringify(records));
+  localStorage.setItem('mr_inventory', JSON.stringify(inventory));
+}
+
+// ── TABS ──
+function switchTab(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.tab')[['sign','log','inventory','qr'].indexOf(name)].classList.add('active');
+  if (name === 'log') renderLog();
+  if (name === 'inventory') renderInventory();
+  if (name === 'qr') generateQR();
+}
+
+// ── ITEMS ──
+function renderItems() {
+  const el = document.getElementById('items-list');
+  el.innerHTML = inventory.map(i =>
+    `<div class="item-tag ${selectedItems.includes(i.id)?'selected':''}" onclick="toggleItem(${i.id})">
+      ${i.name} <span class="qty">(${i.qty})</span>
+    </div>`
+  ).join('');
+}
+function toggleItem(id) {
+  selectedItems = selectedItems.includes(id)
+    ? selectedItems.filter(x => x !== id)
+    : [...selectedItems, id];
+  renderItems();
+}
+
+// ── FORM ──
+function submitForm() {
+  const name = document.getElementById('f-name').value.trim();
+  const action = document.getElementById('f-action').value;
+  if (!name) { showToast('⚠️ Please enter your name'); return; }
+  if (!selectedItems.length) { showToast('⚠️ Please select at least one item'); return; }
+
+  const itemNames = inventory.filter(i => selectedItems.includes(i.id)).map(i => i.name);
+  const rec = {
+    id: Date.now(),
+    timestamp: new Date().toISOString(),
+    name,
+    dept: document.getElementById('f-dept').value,
+    action,
+    items: itemNames,
+    returnDate: document.getElementById('f-return').value,
+    purpose: document.getElementById('f-purpose').value,
+    contact: document.getElementById('f-contact').value,
+    notes: document.getElementById('f-notes').value,
+    status: action === 'out' ? 'out' : 'in',
+  };
+  records.unshift(rec);
+  save();
+  clearForm();
+  showToast(action === 'out' ? '✅ Signed out successfully!' : '✅ Return recorded!');
+}
+
+function clearForm() {
+  ['f-name','f-dept','f-return','f-purpose','f-contact','f-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-action').value = 'out';
+  selectedItems = [];
+  renderItems();
+}
+
+// ── LOG ──
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLog();
+}
+
+function isOverdue(r) {
+  if (r.status !== 'out' || !r.returnDate) return false;
+  return new Date(r.returnDate) < new Date();
+}
+
+function renderLog() {
+  const q = (document.getElementById('search')?.value || '').toLowerCase();
+  let filtered = records.filter(r => {
+    const matchQ = !q || r.name.toLowerCase().includes(q) || r.items.join(' ').toLowerCase().includes(q);
+    if (!matchQ) return false;
+    if (currentFilter === 'out') return r.status === 'out' && !isOverdue(r);
+    if (currentFilter === 'in') return r.status === 'in';
+    if (currentFilter === 'overdue') return isOverdue(r);
+    return true;
+  });
+
+  const out = records.filter(r => r.status === 'out' && !isOverdue(r)).length;
+  const inn = records.filter(r => r.status === 'in').length;
+  const over = records.filter(isOverdue).length;
+  document.getElementById('stat-out').textContent = out;
+  document.getElementById('stat-in').textContent = inn;
+  document.getElementById('stat-over').textContent = over;
+
+  const cont = document.getElementById('log-container');
+  if (!filtered.length) {
+    cont.innerHTML = '<div class="empty-state">No records found.</div>';
+    return;
+  }
+
+  cont.innerHTML = `<table class="log-table">
+    <thead><tr>
+      <th>Date / Time</th><th>Name</th><th>Dept</th><th>Items</th><th>Status</th><th>Return By</th><th></th>
+    </tr></thead>
+    <tbody>
+    ${filtered.map(r => {
+      const ov = isOverdue(r);
+      const badge = r.status === 'in' ? `<span class="badge badge-in">Returned</span>`
+        : ov ? `<span class="badge badge-overdue">Overdue</span>`
+        : `<span class="badge badge-out">Out</span>`;
+      const dt = new Date(r.timestamp);
+      const dateStr = dt.toLocaleDateString('en-CA',{month:'short',day:'numeric'}) + ' ' + dt.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      const retBtn = r.status === 'out' ? `<button class="return-btn" onclick="markReturned(${r.id})">Mark Returned</button>` : '';
+      return `<tr>
+        <td style="white-space:nowrap;font-size:0.82rem;">${dateStr}</td>
+        <td><strong>${r.name}</strong>${r.purpose ? `<br><span style="font-size:0.78rem;color:var(--mid)">${r.purpose}</span>` : ''}</td>
+        <td>${r.dept||'—'}</td>
+        <td style="font-size:0.82rem;">${r.items.join(', ')}</td>
+        <td>${badge}</td>
+        <td style="font-size:0.82rem;">${r.returnDate||'—'}</td>
+        <td>${retBtn}</td>
+      </tr>`;
+    }).join('')}
+    </tbody>
+  </table>`;
+}
+
+function markReturned(id) {
+  const r = records.find(x => x.id === id);
+  if (r) { r.status = 'in'; save(); renderLog(); showToast('✅ Marked as returned'); }
+}
+
+// ── INVENTORY ──
+function renderInventory() {
+  document.getElementById('inv-grid').innerHTML = inventory.map(i =>
+    `<div class="inv-card">
+      <div class="inv-card-name">${i.name}</div>
+      <div class="inv-card-cat">${i.cat}</div>
+      <div class="inv-card-qty">${i.qty} <span>in stock</span></div>
+    </div>`
+  ).join('');
+}
+
+function toggleAddItem() {
+  document.getElementById('add-item-form').classList.toggle('open');
+}
+
+function addInventoryItem() {
+  const name = document.getElementById('ni-name').value.trim();
+  if (!name) return;
+  inventory.push({
+    id: nextId++,
+    name,
+    cat: document.getElementById('ni-cat').value,
+    qty: parseInt(document.getElementById('ni-qty').value) || 1
+  });
+  save();
+  renderInventory();
+  renderItems();
+  document.getElementById('ni-name').value = '';
+  showToast('✅ Item added to inventory');
+}
+
+// ── QR CODE ──
+function generateQR() {
+  const url = window.location.href.replace(/#.*/,'').replace(/\?.*/, '');
+  document.getElementById('qr-url-text').textContent = url;
+  const el = document.getElementById('qrcode');
+  el.innerHTML = '';
+  new QRCode(el, { text: url, width: 220, height: 220, correctLevel: QRCode.CorrectLevel.H });
+}
+
+// ── EXPORT ──
+function exportCSV() {
+  const rows = [['Date','Name','Dept','Action','Items','Status','Return Date','Purpose','Notes']];
+  records.forEach(r => rows.push([
+    new Date(r.timestamp).toLocaleString(),
+    r.name, r.dept, r.action, r.items.join('; '),
+    r.status, r.returnDate, r.purpose, r.notes
+  ]));
+  const csv = rows.map(r => r.map(c => `"${(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'marketing-materials-log.csv';
+  a.click();
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── INIT ──
+renderItems();
+</script>
+</body>
+</html>
